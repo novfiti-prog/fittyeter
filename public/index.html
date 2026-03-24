@@ -1,0 +1,444 @@
+<!DOCTYPE html>
+<html lang="tr" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>FitMeet — AI Personal Coach</title>
+  <meta name="description" content="FitMeet - Yapay Zeka Destekli Kişisel Fitness Koçun">
+  
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,700;1,9..40,300&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+  
+  <!-- Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  
+  <!-- Chart.js -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+  
+  <!-- Styles -->
+  <link rel="stylesheet" href="/css/main.css">
+  <link rel="stylesheet" href="/css/components.css">
+  <link rel="stylesheet" href="/css/pages.css">
+
+  <!-- Favicon -->
+  <link rel="icon" type="image/svg+xml" href="/images/favicon.svg">
+</head>
+<body>
+
+  <!-- ══ LOADING SCREEN ══ -->
+  <div id="loading-screen" class="loading-screen">
+    <div class="loading-inner">
+      <div class="loading-logo">
+        <svg width="60" height="60" viewBox="0 0 60 60" fill="none">
+          <circle cx="30" cy="30" r="28" stroke="var(--accent)" stroke-width="2.5" opacity="0.3"/>
+          <path d="M15 30 C15 22 22 15 30 15 C38 15 45 22 45 30" stroke="var(--accent)" stroke-width="3" stroke-linecap="round" fill="none">
+            <animateTransform attributeName="transform" type="rotate" from="0 30 30" to="360 30 30" dur="1.2s" repeatCount="indefinite"/>
+          </path>
+          <text x="30" y="35" text-anchor="middle" fill="var(--accent)" font-family="Bebas Neue" font-size="14">FM</text>
+        </svg>
+      </div>
+      <p class="loading-text">FITMEET</p>
+    </div>
+  </div>
+
+  <!-- ══ AUTH OVERLAY ══ -->
+  <div id="auth-overlay" class="auth-overlay hidden">
+    <div class="auth-bg">
+      <div class="auth-bg-shape s1"></div>
+      <div class="auth-bg-shape s2"></div>
+      <div class="auth-bg-shape s3"></div>
+    </div>
+    <div class="auth-container">
+      <!-- Logo -->
+      <div class="auth-logo">
+        <svg width="48" height="48" viewBox="0 0 60 60" fill="none">
+          <circle cx="30" cy="30" r="28" stroke="var(--accent)" stroke-width="2"/>
+          <path d="M18 30 L24 22 L30 30 L36 18 L42 30" stroke="var(--accent)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+          <circle cx="30" cy="42" r="3" fill="var(--accent)"/>
+        </svg>
+        <span>FITMEET</span>
+      </div>
+
+      <!-- Tabs -->
+      <div class="auth-tabs">
+        <button class="auth-tab active" data-tab="login" onclick="switchAuthTab('login')">
+          <span data-tr="Giriş Yap" data-en="Sign In">Giriş Yap</span>
+        </button>
+        <button class="auth-tab" data-tab="register" onclick="switchAuthTab('register')">
+          <span data-tr="Kayıt Ol" data-en="Sign Up">Kayıt Ol</span>
+        </button>
+      </div>
+
+      <!-- Login Form -->
+      <form id="login-form" class="auth-form" onsubmit="handleLogin(event)">
+        <div class="form-group">
+          <label data-tr="E-posta" data-en="Email">E-posta</label>
+          <input type="email" id="login-email" placeholder="ornek@email.com" required autocomplete="email">
+        </div>
+        <div class="form-group">
+          <label data-tr="Şifre" data-en="Password">Şifre</label>
+          <div class="input-with-icon">
+            <input type="password" id="login-password" placeholder="••••••••" required autocomplete="current-password">
+            <button type="button" class="toggle-pw" onclick="togglePassword('login-password')"><i class="fas fa-eye"></i></button>
+          </div>
+        </div>
+        <div id="login-error" class="form-error hidden"></div>
+        <button type="submit" class="btn-primary btn-full" id="login-btn">
+          <span data-tr="Giriş Yap" data-en="Sign In">Giriş Yap</span>
+          <i class="fas fa-arrow-right"></i>
+        </button>
+      </form>
+
+      <!-- Register Form -->
+      <form id="register-form" class="auth-form hidden" onsubmit="handleRegister(event)">
+        <div class="form-group">
+          <label data-tr="Ad Soyad" data-en="Full Name">Ad Soyad</label>
+          <input type="text" id="reg-name" placeholder="Ad Soyad" required autocomplete="name">
+        </div>
+        <div class="form-group">
+          <label data-tr="E-posta" data-en="Email">E-posta</label>
+          <input type="email" id="reg-email" placeholder="ornek@email.com" required autocomplete="email">
+        </div>
+        <div class="form-group">
+          <label data-tr="Şifre" data-en="Password">Şifre</label>
+          <div class="input-with-icon">
+            <input type="password" id="reg-password" placeholder="En az 6 karakter" required autocomplete="new-password" minlength="6">
+            <button type="button" class="toggle-pw" onclick="togglePassword('reg-password')"><i class="fas fa-eye"></i></button>
+          </div>
+        </div>
+        <div class="form-group">
+          <label data-tr="Dil / Language" data-en="Language / Dil">Dil / Language</label>
+          <select id="reg-language">
+            <option value="tr">🇹🇷 Türkçe</option>
+            <option value="en">🇺🇸 English</option>
+          </select>
+        </div>
+        <div id="register-error" class="form-error hidden"></div>
+        <button type="submit" class="btn-primary btn-full" id="register-btn">
+          <span data-tr="Hesap Oluştur" data-en="Create Account">Hesap Oluştur</span>
+          <i class="fas fa-arrow-right"></i>
+        </button>
+      </form>
+
+      <!-- Lang switcher on auth -->
+      <div class="auth-lang">
+        <button onclick="setLanguage('tr')" class="lang-btn" id="lang-tr">TR</button>
+        <span>|</span>
+        <button onclick="setLanguage('en')" class="lang-btn" id="lang-en">EN</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ ONBOARDING WIZARD ══ -->
+  <div id="onboarding-overlay" class="onboarding-overlay hidden">
+    <div class="onboarding-container">
+      <div class="onboarding-header">
+        <div class="onboarding-logo">FITMEET</div>
+        <div class="onboarding-progress">
+          <div class="progress-bar"><div class="progress-fill" id="onboarding-progress-fill"></div></div>
+          <span class="progress-text" id="onboarding-progress-text">1 / 5</span>
+        </div>
+      </div>
+
+      <div class="onboarding-steps">
+
+        <!-- Step 1: Basic Info -->
+        <div class="onboarding-step active" data-step="1">
+          <div class="step-icon">👤</div>
+          <h2 class="step-title" data-tr="Temel Bilgiler" data-en="Basic Info">Temel Bilgiler</h2>
+          <p class="step-subtitle" data-tr="Sana özel program için seni tanıyalım" data-en="Let us know you for a personalized program">Sana özel program için seni tanıyalım</p>
+          <div class="step-fields">
+            <div class="form-row">
+              <div class="form-group">
+                <label data-tr="Yaş" data-en="Age">Yaş</label>
+                <input type="number" id="ob-age" min="12" max="100" placeholder="25">
+              </div>
+              <div class="form-group">
+                <label data-tr="Cinsiyet" data-en="Gender">Cinsiyet</label>
+                <select id="ob-gender">
+                  <option value="male" data-tr="Erkek" data-en="Male">Erkek</option>
+                  <option value="female" data-tr="Kadın" data-en="Female">Kadın</option>
+                  <option value="other" data-tr="Diğer" data-en="Other">Diğer</option>
+                </select>
+              </div>
+            </div>
+            <div class="form-row">
+              <div class="form-group">
+                <label data-tr="Boy (cm)" data-en="Height (cm)">Boy (cm)</label>
+                <input type="number" id="ob-height" min="100" max="250" placeholder="175">
+              </div>
+              <div class="form-group">
+                <label data-tr="Kilo (kg)" data-en="Weight (kg)">Kilo (kg)</label>
+                <input type="number" id="ob-weight" min="30" max="300" placeholder="70" step="0.1">
+              </div>
+            </div>
+            <div class="form-group">
+              <label data-tr="Hedef Kilo (kg)" data-en="Target Weight (kg)">Hedef Kilo (kg)</label>
+              <input type="number" id="ob-target-weight" min="30" max="300" placeholder="65" step="0.1">
+            </div>
+          </div>
+        </div>
+
+        <!-- Step 2: Fitness Goal -->
+        <div class="onboarding-step" data-step="2">
+          <div class="step-icon">🎯</div>
+          <h2 class="step-title" data-tr="Fitness Hedefin" data-en="Your Fitness Goal">Fitness Hedefin</h2>
+          <p class="step-subtitle" data-tr="Ana hedefini seç" data-en="Choose your main goal">Ana hedefini seç</p>
+          <div class="goal-cards">
+            <div class="goal-card" data-value="lose_weight" onclick="selectGoal(this)">
+              <span class="goal-icon">🔥</span>
+              <span class="goal-name" data-tr="Kilo Ver" data-en="Lose Weight">Kilo Ver</span>
+            </div>
+            <div class="goal-card" data-value="gain_muscle" onclick="selectGoal(this)">
+              <span class="goal-icon">💪</span>
+              <span class="goal-name" data-tr="Kas Kazan" data-en="Gain Muscle">Kas Kazan</span>
+            </div>
+            <div class="goal-card" data-value="maintain" onclick="selectGoal(this)">
+              <span class="goal-icon">⚖️</span>
+              <span class="goal-name" data-tr="Formu Koru" data-en="Maintain">Formu Koru</span>
+            </div>
+            <div class="goal-card" data-value="general_fitness" onclick="selectGoal(this)">
+              <span class="goal-icon">🏃</span>
+              <span class="goal-name" data-tr="Genel Sağlık" data-en="General Fitness">Genel Sağlık</span>
+            </div>
+            <div class="goal-card" data-value="endurance" onclick="selectGoal(this)">
+              <span class="goal-icon">🏅</span>
+              <span class="goal-name" data-tr="Dayanıklılık" data-en="Endurance">Dayanıklılık</span>
+            </div>
+          </div>
+          <div class="form-group mt-20">
+            <label data-tr="Fitness Seviyesi" data-en="Fitness Level">Fitness Seviyesi</label>
+            <select id="ob-fitness-level">
+              <option value="beginner" data-tr="Başlangıç - Hiç spor yapmadım" data-en="Beginner - Never worked out">Başlangıç - Hiç spor yapmadım</option>
+              <option value="intermediate" data-tr="Orta - Ara sıra spor yapıyorum" data-en="Intermediate - Work out sometimes">Orta - Ara sıra spor yapıyorum</option>
+              <option value="advanced" data-tr="İleri - Düzenli spor yapıyorum" data-en="Advanced - Work out regularly">İleri - Düzenli spor yapıyorum</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- Step 3: Lifestyle -->
+        <div class="onboarding-step" data-step="3">
+          <div class="step-icon">💼</div>
+          <h2 class="step-title" data-tr="Günlük Yaşam" data-en="Daily Lifestyle">Günlük Yaşam</h2>
+          <p class="step-subtitle" data-tr="Programın sana uygun olsun" data-en="Let your program fit your life">Programın sana uygun olsun</p>
+          <div class="step-fields">
+            <div class="form-group">
+              <label data-tr="İş / Günlük Aktivite" data-en="Job / Daily Activity">İş / Günlük Aktivite</label>
+              <select id="ob-job-type">
+                <option value="sedentary" data-tr="Masa başı - Çok az hareket" data-en="Sedentary - Mostly sitting">Masa başı - Çok az hareket</option>
+                <option value="light_active" data-tr="Hafif aktif - Ara sıra yürüyüş" data-en="Light active - Occasional walking">Hafif aktif - Ara sıra yürüyüş</option>
+                <option value="moderate_active" data-tr="Orta aktif - Hareketli iş" data-en="Moderate active - Active job">Orta aktif - Hareketli iş</option>
+                <option value="very_active" data-tr="Çok aktif - Fiziksel iş" data-en="Very active - Physical labor">Çok aktif - Fiziksel iş</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label data-tr="Haftalık Antrenman Saati" data-en="Weekly Workout Hours">Haftalık Antrenman Saati: <span id="workout-hours-val">3</span> <span data-tr="saat" data-en="hours">saat</span></label>
+              <input type="range" id="ob-workout-hours" min="1" max="15" value="3" oninput="document.getElementById('workout-hours-val').textContent=this.value">
+            </div>
+            <div class="form-group">
+              <label data-tr="Beslenme Kısıtlamaları" data-en="Dietary Restrictions">Beslenme Kısıtlamaları</label>
+              <div class="checkbox-grid">
+                <label class="checkbox-item"><input type="checkbox" value="vegetarian"> <span data-tr="Vejetaryen" data-en="Vegetarian">Vejetaryen</span></label>
+                <label class="checkbox-item"><input type="checkbox" value="vegan"> <span data-tr="Vegan" data-en="Vegan">Vegan</span></label>
+                <label class="checkbox-item"><input type="checkbox" value="gluten_free"> <span data-tr="Gluten Yok" data-en="Gluten Free">Gluten Yok</span></label>
+                <label class="checkbox-item"><input type="checkbox" value="lactose_free"> <span data-tr="Laktoz Yok" data-en="Lactose Free">Laktoz Yok</span></label>
+                <label class="checkbox-item"><input type="checkbox" value="halal"> <span>Helal</span></label>
+                <label class="checkbox-item"><input type="checkbox" value="kosher"> <span>Kosher</span></label>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Step 4: Workout Setup -->
+        <div class="onboarding-step" data-step="4">
+          <div class="step-icon">🏋️</div>
+          <h2 class="step-title" data-tr="Antrenman Kurulumu" data-en="Workout Setup">Antrenman Kurulumu</h2>
+          <p class="step-subtitle" data-tr="Nerede ve nasıl çalışacaksın?" data-en="Where and how will you train?">Nerede ve nasıl çalışacaksın?</p>
+          <div class="step-fields">
+            <div class="form-group">
+              <label data-tr="Antrenman Yeri" data-en="Workout Location">Antrenman Yeri</label>
+              <div class="location-cards">
+                <div class="location-card" data-value="home" onclick="selectLocation(this)">
+                  <span class="loc-icon">🏠</span>
+                  <span data-tr="Ev" data-en="Home">Ev</span>
+                </div>
+                <div class="location-card" data-value="gym" onclick="selectLocation(this)">
+                  <span class="loc-icon">🏋️</span>
+                  <span data-tr="Spor Salonu" data-en="Gym">Spor Salonu</span>
+                </div>
+                <div class="location-card" data-value="both" onclick="selectLocation(this)">
+                  <span class="loc-icon">🔄</span>
+                  <span data-tr="Her İkisi" data-en="Both">Her İkisi</span>
+                </div>
+              </div>
+            </div>
+            <div id="equipment-section" class="form-group">
+              <label data-tr="Mevcut Ekipmanlar (opsiyonel)" data-en="Available Equipment (optional)">Mevcut Ekipmanlar (opsiyonel)</label>
+              <div class="checkbox-grid">
+                <label class="checkbox-item"><input type="checkbox" value="dumbbells"> <span data-tr="Dambıl" data-en="Dumbbells">Dambıl</span></label>
+                <label class="checkbox-item"><input type="checkbox" value="barbell"> <span data-tr="Halter" data-en="Barbell">Halter</span></label>
+                <label class="checkbox-item"><input type="checkbox" value="pull_up_bar"> <span data-tr="Barfiks" data-en="Pull-up Bar">Barfiks</span></label>
+                <label class="checkbox-item"><input type="checkbox" value="resistance_bands"> <span data-tr="Direnç Bandı" data-en="Resistance Bands">Direnç Bandı</span></label>
+                <label class="checkbox-item"><input type="checkbox" value="treadmill"> <span data-tr="Koşu Bandı" data-en="Treadmill">Koşu Bandı</span></label>
+                <label class="checkbox-item"><input type="checkbox" value="kettlebell"> <span>Kettlebell</span></label>
+                <label class="checkbox-item"><input type="checkbox" value="yoga_mat"> <span data-tr="Yoga Matı" data-en="Yoga Mat">Yoga Matı</span></label>
+                <label class="checkbox-item"><input type="checkbox" value="jump_rope"> <span data-tr="Atlama İpi" data-en="Jump Rope">Atlama İpi</span></label>
+              </div>
+            </div>
+            <div class="form-group">
+              <label data-tr="Sağlık Notları (varsa)" data-en="Health Notes (if any)">Sağlık Notları (varsa)</label>
+              <textarea id="ob-health-notes" placeholder="Örn: Diz ağrısı, bel fıtığı..." rows="2"></textarea>
+            </div>
+          </div>
+        </div>
+
+        <!-- Step 5: Start Date -->
+        <div class="onboarding-step" data-step="5">
+          <div class="step-icon">🚀</div>
+          <h2 class="step-title" data-tr="Başlangıç Tarihi" data-en="Start Date">Başlangıç Tarihi</h2>
+          <p class="step-subtitle" data-tr="Ne zaman başlamak istiyorsun?" data-en="When do you want to start?">Ne zaman başlamak istiyorsun?</p>
+          <div class="step-fields">
+            <div class="form-group">
+              <label data-tr="Program Başlangıç Tarihi" data-en="Program Start Date">Program Başlangıç Tarihi</label>
+              <input type="date" id="ob-start-date">
+            </div>
+            <div class="form-group">
+              <label data-tr="Program Süresi" data-en="Program Duration">Program Süresi</label>
+              <select id="ob-duration">
+                <option value="4" data-tr="4 Hafta" data-en="4 Weeks">4 Hafta</option>
+                <option value="8" data-tr="8 Hafta" data-en="8 Weeks">8 Hafta</option>
+                <option value="12" data-tr="12 Hafta" data-en="12 Weeks">12 Hafta</option>
+              </select>
+            </div>
+            <div class="ai-generating-hint">
+              <div class="hint-icon">🤖</div>
+              <p data-tr="AI koçun tüm bilgilerini analiz edip kişisel programını oluşturacak. Bu birkaç saniye sürebilir." data-en="Your AI coach will analyze all your info and create your personal program. This may take a few seconds.">
+                AI koçun tüm bilgilerini analiz edip kişisel programını oluşturacak. Bu birkaç saniye sürebilir.
+              </p>
+            </div>
+          </div>
+        </div>
+
+      </div><!-- end steps -->
+
+      <!-- Navigation -->
+      <div class="onboarding-nav">
+        <button class="btn-secondary" id="ob-prev-btn" onclick="prevStep()" style="visibility:hidden">
+          <i class="fas fa-arrow-left"></i> <span data-tr="Geri" data-en="Back">Geri</span>
+        </button>
+        <button class="btn-primary" id="ob-next-btn" onclick="nextStep()">
+          <span data-tr="Devam" data-en="Continue">Devam</span> <i class="fas fa-arrow-right"></i>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ MAIN APP ══ -->
+  <div id="app" class="app hidden">
+
+    <!-- Sidebar -->
+    <aside class="sidebar" id="sidebar">
+      <div class="sidebar-logo">
+        <svg width="32" height="32" viewBox="0 0 60 60" fill="none">
+          <circle cx="30" cy="30" r="28" stroke="var(--accent)" stroke-width="2"/>
+          <path d="M18 30 L24 22 L30 30 L36 18 L42 30" stroke="var(--accent)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+          <circle cx="30" cy="42" r="3" fill="var(--accent)"/>
+        </svg>
+        <span class="logo-text">FITMEET</span>
+      </div>
+
+      <nav class="sidebar-nav">
+        <a class="nav-item active" data-page="dashboard" onclick="navigate('dashboard')">
+          <i class="fas fa-home"></i>
+          <span data-tr="Ana Sayfa" data-en="Dashboard">Ana Sayfa</span>
+        </a>
+        <a class="nav-item" data-page="program" onclick="navigate('program')">
+          <i class="fas fa-dumbbell"></i>
+          <span data-tr="Programım" data-en="My Program">Programım</span>
+        </a>
+        <a class="nav-item" data-page="today" onclick="navigate('today')">
+          <i class="fas fa-calendar-check"></i>
+          <span data-tr="Bugün" data-en="Today">Bugün</span>
+          <span class="nav-badge" id="today-badge" style="display:none">!</span>
+        </a>
+        <a class="nav-item" data-page="nutrition" onclick="navigate('nutrition')">
+          <i class="fas fa-apple-alt"></i>
+          <span data-tr="Beslenme" data-en="Nutrition">Beslenme</span>
+        </a>
+        <a class="nav-item" data-page="progress" onclick="navigate('progress')">
+          <i class="fas fa-chart-line"></i>
+          <span data-tr="İlerleme" data-en="Progress">İlerleme</span>
+        </a>
+        <a class="nav-item" data-page="achievements" onclick="navigate('achievements')">
+          <i class="fas fa-trophy"></i>
+          <span data-tr="Başarılar" data-en="Achievements">Başarılar</span>
+        </a>
+        <a class="nav-item" data-page="friends" onclick="navigate('friends')">
+          <i class="fas fa-users"></i>
+          <span data-tr="Arkadaşlar" data-en="Friends">Arkadaşlar</span>
+          <span class="nav-badge" id="notif-badge" style="display:none">•</span>
+        </a>
+        <a class="nav-item" data-page="coach" onclick="navigate('coach')">
+          <i class="fas fa-robot"></i>
+          <span data-tr="AI Koç" data-en="AI Coach">AI Koç</span>
+        </a>
+      </nav>
+
+      <div class="sidebar-bottom">
+        <div class="user-card" onclick="navigate('settings')">
+          <div class="user-avatar" id="sidebar-avatar">?</div>
+          <div class="user-info">
+            <span class="user-name" id="sidebar-name">—</span>
+            <span class="user-sub" id="sidebar-email">—</span>
+          </div>
+        </div>
+        <div class="sidebar-actions">
+          <button class="icon-btn" onclick="toggleLanguage()" title="Toggle Language">
+            <i class="fas fa-globe"></i>
+          </button>
+          <button class="icon-btn" onclick="logout()" title="Çıkış">
+            <i class="fas fa-sign-out-alt"></i>
+          </button>
+        </div>
+      </div>
+    </aside>
+
+    <!-- Mobile Header -->
+    <header class="mobile-header">
+      <button class="hamburger" onclick="toggleSidebar()"><i class="fas fa-bars"></i></button>
+      <span class="mobile-logo">FITMEET</span>
+      <button class="icon-btn" onclick="navigate('coach')"><i class="fas fa-robot"></i></button>
+    </header>
+
+    <!-- Mobile sidebar overlay -->
+    <div class="sidebar-overlay hidden" id="sidebar-overlay" onclick="toggleSidebar()"></div>
+
+    <!-- Main Content -->
+    <main class="main-content" id="main-content">
+      <!-- Pages are injected here by JS -->
+    </main>
+
+  </div>
+
+  <!-- ══ TOAST NOTIFICATIONS ══ -->
+  <div id="toast-container"></div>
+
+  <!-- Scripts -->
+  <script src="/js/api.js"></script>
+  <script src="/js/i18n.js"></script>
+  <script src="/js/auth.js"></script>
+  <script src="/js/onboarding.js"></script>
+  <script src="/js/app.js"></script>
+  <script src="/js/pages/dashboard.js"></script>
+  <script src="/js/pages/today.js"></script>
+  <script src="/js/pages/program.js"></script>
+  <script src="/js/pages/nutrition.js"></script>
+  <script src="/js/pages/progress.js"></script>
+  <script src="/js/pages/achievements.js"></script>
+  <script src="/js/pages/friends.js"></script>
+  <script src="/js/pages/coach.js"></script>
+  <script src="/js/pages/settings.js"></script>
+</body>
+</html>
